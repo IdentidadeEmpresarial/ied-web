@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Web3 from 'web3';
 import CredentialABI from '../../lib/credential-abi.json';
@@ -15,24 +15,24 @@ export default function Issuer() {
 
   useEffect(() => {
     if (window.ethereum) {
-        window.ethereum.request({method: 'eth_requestAccounts'})
-          .then(() => {
-            window.web3 = new Web3(window.ethereum);
-            setEthEnabled(true);
-            window.web3.eth.getAccounts().then(accounts => {
-              setAddress(accounts[0]);
-            })
+      window.ethereum.request({ method: 'eth_requestAccounts' })
+        .then(() => {
+          window.web3 = new Web3(window.ethereum);
+          setEthEnabled(true);
+          window.web3.eth.getAccounts().then(accounts => {
+            setAddress(accounts[0]);
           })
+        })
     }
     setEthEnabled(false);
   }, [])
 
-  
+
   async function getPublicKeyWithMetamask() {
     return await window.ethereum
       .request({
         method: 'eth_getEncryptionPublicKey',
-        params: [address], 
+        params: [address],
       });
   }
 
@@ -58,7 +58,7 @@ export default function Issuer() {
     contract.methods.getAllTokensByOwner(address).call(async (err, tokensIds) => {
       const tokensByOwner = await Promise.all(tokensIds.map(async (tokenId) => {
         const attributes = await contract.methods.attributes(tokenId).call((err, attributes) => {
-          if(err) {
+          if (err) {
             console.log(err);
           }
         });
@@ -73,7 +73,7 @@ export default function Issuer() {
     });
   }
 
-  return ( 
+  return (
     <>
       <Head>
         <title>Emissor</title>
@@ -84,13 +84,13 @@ export default function Issuer() {
         <div>{address}</div>
         <br />
         <input onChange={e => setType(e.target.value)} placeholder="Tipo de credencial" />
-        <button onClick={sendCredential} disabled={!ethEnabled}>Emitir credencial</button> 
+        <button onClick={sendCredential} disabled={!ethEnabled}>Emitir credencial</button>
         <br />
-        <button onClick={listCredentials} disabled={!ethEnabled}>Listar credenciais</button> 
+        <button onClick={listCredentials} disabled={!ethEnabled}>Listar credenciais</button>
       </article>
       <ul>{tokens.map((token) => (
-          <li key={token.id}>{token.id}: {token.type}: {token.hash}</li>
-        ))}
+        <li key={token.id}>{token.id}: {token.type}: {token.hash}</li>
+      ))}
       </ul>
     </>
   );
