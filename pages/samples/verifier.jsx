@@ -53,7 +53,7 @@ export default function Verifier() {
                                             {
                                                 id: tokenId,
                                                 type: attributes.objectType,
-                                                data: decryptedMessage
+                                                decryptedData: decryptedMessage
                                             }
                                         );
                                         console.log(tokensByOwner);
@@ -77,7 +77,11 @@ export default function Verifier() {
                 <button onClick={listCredentials} disabled={!ethEnabled}>Listar credenciais</button>
             </article>
             <ul>{tokens.map((token) => (
-                <li key={token.id}>{token.id}: {token.type}: {token.data}</li>
+                <li key={token.id}>
+                    <div>Token id: {token.id}</div>
+                    <div>Tipo: {token.type}</div>
+                    <div>Dados desencriptados: {token.decryptedData}</div>
+                </li>
             ))}
             </ul>
         </>

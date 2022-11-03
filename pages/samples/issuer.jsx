@@ -9,9 +9,10 @@ export default function Issuer() {
   const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
   const contract = new iWeb3.eth.Contract(CredentialABI, contractAddress)
 
+  const router = useRouter();
+
   const [ethEnabled, setEthEnabled] = useState(false);
   const [address, setAddress] = useState(null);
-  const router = useRouter();
   const [type, setType] = useState();
 
   useEffect(() => {

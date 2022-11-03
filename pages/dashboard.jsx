@@ -1,5 +1,6 @@
 import Link from 'next/Link'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 import Web3 from 'web3'
 import CredentialABI from '../lib/credential-abi.json'
 
@@ -9,12 +10,14 @@ function Header({ title }) {
 
 export default function Dashboard(App) {
 
-  const iWeb3 = new Web3(process.env.NEXT_PUBLIC_RPC_URL);
-  const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+  const iWeb3 = new Web3(process.env.NEXT_PUBLIC_RPC_URL)
+  const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS
   const contract = new iWeb3.eth.Contract(CredentialABI, contractAddress)
 
-  const [ethEnabled, setEthEnabled] = useState(false);
-  const [address, setAddress] = useState(null);
+  const router = useRouter()
+
+  const [ethEnabled, setEthEnabled] = useState(false)
+  const [address, setAddress] = useState(null)
   const [issuers, setIssuers] = useState([
     {
       id: 1,
@@ -29,7 +32,7 @@ export default function Dashboard(App) {
         }
       ]
     }
-  ]);
+  ])
 
 
   useEffect(() => {
@@ -57,20 +60,18 @@ export default function Dashboard(App) {
       });
   }
 
-  async function decryptCredentials() {
-    credentials.forEach(async credential => {
-      if (credential.data && credential.data.length > 10) {
-        await decrypt(credential.data)
-          .then(decryptedMessage => {
-            credential.decryptedData = decryptedMessage;
-            set(credentials.slice())
-          }).catch(error => console.log(error));
-      }
-    });
+  async function decryptCredential(credential) {
+    console.log(credential)
+    if (credential.data && credential.data.length > 10) {
+      await decrypt(credential.data)
+        .then(decryptedMessage => {
+          credential.decryptedData = decryptedMessage;
+          setIssuers(issuers.slice())
+        }).catch(error => console.log(error));
+    }
   }
 
   async function listCredentials(address) {
-    console.log(address);
     contract.methods.getAllTokensByOwner(address).call()
       .then(async (tokensIds) => {
         tokensIds.map(async (tokenId) => {
@@ -95,6 +96,28 @@ export default function Dashboard(App) {
             });
         });
       })
+  }
+
+  async function burnCredential(credential) {
+    window.web3.eth.getTransactionCount(address, async (err, txCount) => {
+      const networkId = await window.web3.eth.net.getId();
+      const tx =
+      {
+        from: address,
+        nonce: window.web3.utils.toHex(txCount),
+        to: contractAddress,
+        chainId: networkId,
+        gasPrice: Web3.utils.toHex(Web3.utils.toWei('10', 'gwei')),
+        gas: Web3.utils.toHex(800000),
+        data: contract.methods.burn(credential.id).encodeABI()
+      };
+      console.log(tx)
+      window.web3.eth.sendTransaction(tx, (err, txHash) => {
+        console.log('err:', err, 'txHash:', txHash)
+        router.reload(window.location.pathname)
+      })
+
+    })
   }
 
   return (
@@ -122,9 +145,21 @@ export default function Dashboard(App) {
                     query: { type: type.name }
                   }}>Emitir credencial</Link>
                 }</div>
-                <div>{type.holderCredential &&
-                    <div>{JSON.stringify(type.holderCredential)}</div>
-                }</div>
+                {type.holderCredential &&
+                  <>
+                    <div>
+                      {!type.holderCredential.decryptedData &&
+                        <button onClick={e => decryptCredential(type.holderCredential)}>Visualizar</button>
+                      }
+                      {type.holderCredential.decryptedData &&
+                        <div>JSON da credencial: {type.holderCredential.decryptedData}</div>
+                      }
+                    </div>
+                    <div>
+                      <button onClick={e => burnCredential(type.holderCredential)}>Excluir credencial</button>
+                    </div>
+                  </>
+                }
               </li>
             ))}
             </ul>
