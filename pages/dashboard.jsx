@@ -1,5 +1,5 @@
 import Link from 'next/Link'
-import {useState, useEffect} from 'react'
+import { useState, useEffect } from 'react'
 import Web3 from 'web3'
 import CredentialABI from '../lib/credential-abi.json'
 
@@ -59,13 +59,13 @@ export default function Dashboard(App) {
 
   async function decryptCredentials() {
     credentials.forEach(async credential => {
-          if (credential.data && credential.data.length > 10) {
-            await decrypt(credential.data)
-              .then(decryptedMessage => {
-                credential.decryptedData = decryptedMessage;
-                set(credentials.slice())
-              }).catch(error => console.log(error));
-          }
+      if (credential.data && credential.data.length > 10) {
+        await decrypt(credential.data)
+          .then(decryptedMessage => {
+            credential.decryptedData = decryptedMessage;
+            set(credentials.slice())
+          }).catch(error => console.log(error));
+      }
     });
   }
 
@@ -76,19 +76,22 @@ export default function Dashboard(App) {
         tokensIds.map(async (tokenId) => {
           await contract.methods.attributes(tokenId).call()
             .then(async (attributes) => {
-                  credential = {
-                      id: tokenId,
-                      subjectId: attributes.subjectId,
-                      type: attributes.objectType,
-                      data: attributes.data,
-                      dataHash: attributes.dataHash,
-                      dataKey: attributes.dataKey
-                    }
-                  issuers.forEach(issuer => {
-                    const credentialType = issuer.credentialTypes.map(type => type.name === credential.type);
-                    credentialType.holderCredential = credential;
+              const credential = {
+                id: tokenId,
+                subjectId: attributes.subjectId,
+                type: attributes.objectType,
+                data: attributes.data,
+                dataHash: attributes.dataHash,
+                dataKey: attributes.dataKey
+              }
+              issuers.forEach(issuer => {
+                issuer.credentialTypes
+                  .filter(type => type.name === credential.type)
+                  .forEach(type => {
+                    type.holderCredential = credential;
                   });
-                  setIssuers(issuers.slice())
+              });
+              setIssuers(issuers.slice())
             });
         });
       })
@@ -113,12 +116,15 @@ export default function Dashboard(App) {
             <ul>{issuer.credentialTypes.map((type) => (
               <li key={type.id}>
                 <div>{type.name}</div>
-                <div>{!type.holderCredential && 
+                <div>{!type.holderCredential &&
                   <Link href={{
                     pathname: "/samples/issuer",
-                    query: {typeId: type.id, typeName: type.name}
-                  }}>Emitir credencial</Link> 
-                 }</div>
+                    query: { type: type.name }
+                  }}>Emitir credencial</Link>
+                }</div>
+                <div>{type.holderCredential &&
+                    <div>{JSON.stringify(type.holderCredential)}</div>
+                }</div>
               </li>
             ))}
             </ul>

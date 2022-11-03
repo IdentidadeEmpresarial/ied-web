@@ -18,14 +18,13 @@ export default function handler(req, res) {
   const holderAddress = req.body.holderAddress;
   const holderPublicKey = req.body.holderPublicKey;
   const credentialType = req.body.credentialType;
+  const data = req.body.data;
 
   iWeb3.eth.getTransactionCount(issuerAddress, async (err, txCount) => {
     console.log(`txCount: ${txCount}`);
 
     const networkId = await iWeb3.eth.net.getId();
-    console.log(`networkId: ${networkId}`);
-    const hash = await encryptWithPublicKey(holderPublicKey, 'mensagem secreta');
-    console.log(hash);
+    const encryptedData = await encryptWithPublicKey(holderPublicKey, data);
     const tx = await iWeb3.eth.accounts.signTransaction(
       {
         nonce: iWeb3.utils.toHex(txCount),
@@ -33,7 +32,7 @@ export default function handler(req, res) {
         to: contractAddress,
         gasPrice: Web3.utils.toHex(Web3.utils.toWei('10', 'gwei')),
         gas: Web3.utils.toHex(800000),
-        data: contract.methods.safeMint(holderAddress, "012345", credentialType, hash, 'key').encodeABI()
+        data: contract.methods.safeMint(holderAddress, "012345", credentialType, encryptedData, 'hash', 'key').encodeABI()
       },
       privateKey
     );
@@ -57,7 +56,6 @@ async function encryptWithPublicKey(pubkey, text) {
       ),
       'utf8'
     ));
-  console.log(`encrypted text: ${encryptedText}`);
   return encryptedText;
 }
 

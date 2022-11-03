@@ -41,17 +41,19 @@ export default function Verifier() {
         const tokensByOwner = [];
         contract.methods.getAllTokensByOwner(address).call()
             .then(async (tokensIds) => {
+                console.log(tokensIds);
                 tokensIds.map(async (tokenId) => {
                     await contract.methods.attributes(tokenId).call()
                         .then(async (attributes) => {
-                            if (attributes.dataHash && attributes.dataHash.length > 10) {
-                                await decrypt(attributes.dataHash)
+                            console.log(attributes);
+                            if (attributes.data && attributes.data.length > 10) {
+                                await decrypt(attributes.data)
                                     .then(decryptedMessage => {
                                         tokensByOwner.push(
                                             {
                                                 id: tokenId,
                                                 type: attributes.objectType,
-                                                message: decryptedMessage
+                                                data: decryptedMessage
                                             }
                                         );
                                         console.log(tokensByOwner);
@@ -75,7 +77,7 @@ export default function Verifier() {
                 <button onClick={listCredentials} disabled={!ethEnabled}>Listar credenciais</button>
             </article>
             <ul>{tokens.map((token) => (
-                <li key={token.id}>{token.id}: {token.type}: {token.message}</li>
+                <li key={token.id}>{token.id}: {token.type}: {token.data}</li>
             ))}
             </ul>
         </>
