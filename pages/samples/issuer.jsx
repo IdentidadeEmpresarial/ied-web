@@ -56,10 +56,6 @@ export default function Issuer() {
     return encryptedText;
   }
 
-  async function getHolderSignature(dataHash) {
-    return await window.web3.eth.sign(dataHash, address);
-  }
-
 
   async function sendCredential() {
     const holderPublicKey = await getPublicKeyWithMetamask();
@@ -67,7 +63,8 @@ export default function Issuer() {
     const prefix = "\x19Ethereum Signed Message:\n" + credentialData.length;
     const dataHash = Web3.utils.sha3(prefix + credentialData);
 
-    const holderSignature = await getHolderSignature(dataHash);
+    console.log(credentialData);
+    const holderSignature = await window.web3.eth.personal.sign(credentialData, address);
 
     const encryptedData = await encryptWithPublicKey(holderPublicKey, credentialData);
 
