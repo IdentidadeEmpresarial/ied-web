@@ -1,8 +1,10 @@
-import { useState, useEffect} from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import Web3 from 'web3'
 import CredentialABI from '../../lib/credential-abi.json'
+import * as ethUtil from 'ethereumjs-util';
+import * as sigUtil from '@metamask/eth-sig-util';
 
 export default function Issuer() {
   const iWeb3 = new Web3(process.env.NEXT_PUBLIC_RPC_URL);
@@ -39,21 +41,54 @@ export default function Issuer() {
       });
   }
 
+  async function encryptWithPublicKey(pubkey, text) {
+    const encryptedText = ethUtil.bufferToHex(
+      Buffer.from(
+        JSON.stringify(
+          sigUtil.encrypt({
+            publicKey: pubkey,
+            data: text,
+            version: 'x25519-xsalsa20-poly1305',
+          })
+        ),
+        'utf8'
+      ));
+    return encryptedText;
+  }
+
+  async function getHolderSignature(dataHash) {
+    return await window.web3.eth.sign(dataHash, address);
+  }
+
 
   async function sendCredential() {
     const holderPublicKey = await getPublicKeyWithMetamask();
+    const credentialData = JSON.stringify({ description: "sample credential json encrypted by holder public key" });
+    const prefix = "\x19Ethereum Signed Message:\n" + credentialData.length;
+    const dataHash = Web3.utils.sha3(prefix + credentialData);
+
+    const holderSignature = await getHolderSignature(dataHash);
+
+    const encryptedData = await encryptWithPublicKey(holderPublicKey, credentialData);
+
+    const requestObject = {
+      holderAddress: address,
+      credentialType: type,
+      dataHash: dataHash,
+      holderSignature: holderSignature,
+      encryptedData: encryptedData
+    };
 
     fetch('/api/issue-credential', {
       method: 'POST',
       headers: {
         'Content-Type': "application/json",
       },
-      body: JSON.stringify({
-        holderAddress: address,
-        holderPublicKey: holderPublicKey,
-        credentialType: type,
-        data: JSON.stringify({description: "sample credential json encrypted by holder public key"})
-      })
+      body: JSON.stringify(requestObject)
+    }).then(res => {
+      return res.json()
+    }).then(data => {
+      console.log(data)
     });
   }
 

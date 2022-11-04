@@ -52,7 +52,7 @@ export default function Verifier() {
                                         tokensByOwner.push(
                                             {
                                                 id: tokenId,
-                                                type: attributes.objectType,
+                                                type: attributes.credentialType,
                                                 decryptedData: decryptedMessage
                                             }
                                         );

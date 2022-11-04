@@ -14,8 +14,8 @@ Create the `.env.local` file with the RPC endpoint, contract address and issuer'
 NEXT_PUBLIC_RPC_URL=http://localhost:8545
 NEXT_PUBLIC_CONTRACT_ADDRESS=XXX
 
-NEXT_PUBLIC_ISSUER_ADDRESS=XXX
-ISSUER_PRIVATE_KEY=XXX
+SAMPLE_ISSUER_ADDRESS=XXX
+SAMPLE_ISSUER_PRIVATE_KEY=XXX
 ```
 
 ## Run

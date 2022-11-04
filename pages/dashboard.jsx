@@ -79,8 +79,9 @@ export default function Dashboard(App) {
             .then(async (attributes) => {
               const credential = {
                 id: tokenId,
+                issuer: attributes.issuer,
                 subjectId: attributes.subjectId,
-                type: attributes.objectType,
+                type: attributes.credentialType,
                 data: attributes.data,
                 dataHash: attributes.dataHash,
                 dataKey: attributes.dataKey
