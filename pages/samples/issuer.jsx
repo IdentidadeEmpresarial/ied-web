@@ -59,7 +59,7 @@ export default function Issuer() {
 
   async function sendCredential() {
     const holderPublicKey = await getPublicKeyWithMetamask();
-    const credentialData = JSON.stringify({ description: "sample credential json encrypted by holder public key" });
+    const credentialData = "1699143646;NAO_CONSTA_DEBITO";
     const prefix = "\x19Ethereum Signed Message:\n" + credentialData.length;
     const dataHash = Web3.utils.sha3(prefix + credentialData);
 

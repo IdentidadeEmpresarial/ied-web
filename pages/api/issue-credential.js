@@ -16,7 +16,9 @@ export default function handler(req, res) {
 
   const holderAddress = req.body.holderAddress
   const credentialType = req.body.credentialType
+  // TODO: encrypted data should not come from client, should be encrypted on server
   const encryptedData = req.body.encryptedData
+  // TODO: hash should be calculated or verified on server-side
   const dataHash = req.body.dataHash
   const holderSignature = req.body.holderSignature
 
